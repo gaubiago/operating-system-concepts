@@ -5,6 +5,9 @@ firefoxLauncher
 computeHashValue
 *.zip
 
+# VS Code hidden file
+.vscode
+
 # Prerequisites
 *.d
 
