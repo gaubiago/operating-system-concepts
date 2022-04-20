@@ -1,8 +1,13 @@
 # macOS hidden file
 .DS_Store
-*.txt
+
+# My executables
 firefoxLauncher
 computeHashValue
+multi_threaded_merge_sort
+
+# Ignore
+*.txt
 *.zip
 
 # VS Code hidden file
