@@ -129,6 +129,7 @@ void validate_argv(int& argc, char* argv[]) {
 }
 
 std::string dump_partition(std::vector<int>& partition) {
+  // Build partition string
   std::string str("");
   str += '[';
   for (int i = 0; i < partition.size(); i++) {
@@ -141,12 +142,10 @@ std::string dump_partition(std::vector<int>& partition) {
 }
 
 void generate_list(std::vector<int>& rand_int_list, const size_t& n, const size_t& upper_bound) {
-  int tmp;
-
   // Initialize random seed
   srand (time(NULL));
 
-  for (int i = 0; i < n; i++) {
+  for (int i = 0, tmp; i < n; i++) {
     tmp = rand()%(!upper_bound ? 1 : upper_bound+1) + LOWER_BOUND;
     rand_int_list.push_back(tmp);
   }
@@ -159,9 +158,13 @@ void print_list(std::vector<int>& list) {
 
 void create_partitions(const std::vector<int>& rand_int_list, std::vector< std::vector<int> >& rand_int_partitions,
                        const size_t& n, const size_t& p) {
-  size_t quotient = n/p; // Partition size
-  size_t remainder = n%p; // Extra elements to be distributed into a required # of partitions
-  size_t offset = 0; // Number of extra elements added individually to different partitions
+  // quotient: Partition size
+  size_t quotient = n/p; 
+  // remainder: Extra elements to be distributed into a required # of partitions
+  size_t remainder = n%p;
+  // offset: Number of extra elements added individually to different partitions
+  size_t offset = 0;
+
   for (int i = 0, j = 0; i < n; i++) {
     // Whenever a partition reaches its indended, even size and it's not the first iteration
     if ((i-offset)%(quotient) == 0 && i != 0) {
@@ -205,12 +208,20 @@ void cpp_merge(std::vector<int>& in_part_a, std::vector<int>& in_part_b, std::ve
 
 void merge_partitions_multithreaded(std::vector< std::vector<int> >& rand_int_partitions, std::vector<std::thread>& threads,
                                     const size_t& p) {
+  // input_partitions: partitions before merging operations
+  // output_partitions: partitions after merting operations
+  // pass_last_partitions: last partition of the list of partitions at each pass (when p_before_merge is odd)
   std::vector< std::vector<int> > input_partitions, output_partitions, pass_last_partitions;
+  // last_partitions_merge_output: result of the merging of two pass_last_partitions
   std::vector<int> last_partitions_merge_output;
-  input_partitions = rand_int_partitions;
+  // p_before_merge: number of partitions before merging operations
   size_t p_before_merge = p;
+  // p_after_merge: number of partitions after merging operations
   size_t p_after_merge = p/2;
+  // counter: pass counter
   size_t counter = 0;
+
+  input_partitions = rand_int_partitions;
 
   while (p_after_merge > 0) {
     std::cout << "\n-----------------------------   PASS " << ++counter << "   -----------------------------" << std::endl;
@@ -218,12 +229,16 @@ void merge_partitions_multithreaded(std::vector< std::vector<int> >& rand_int_pa
     threads.clear();
     output_partitions.resize(p_after_merge);
 
+    // Do multithreaded merging operations
     for (int i = 0, j = 0; i < p_before_merge-1; i += 2, j++) {
       threads.push_back(std::thread(cpp_merge, std::ref(input_partitions[i]), std::ref(input_partitions[i+1]), std::ref(output_partitions[j])));
     }
 
+    // Is the number of partitions before the merging operations odd?
     if (p_before_merge%2) {
+      // Append last partition of the list of partitions
       pass_last_partitions.push_back(input_partitions[p_before_merge-1]);
+      // Carry out multithreaded merging operation if the vector's size is 2
       if (pass_last_partitions.size() == 2) {
         threads.push_back(std::thread(cpp_merge, std::ref(pass_last_partitions[0]), std::ref(pass_last_partitions[1]), std::ref(last_partitions_merge_output)));
       }
@@ -233,9 +248,13 @@ void merge_partitions_multithreaded(std::vector< std::vector<int> >& rand_int_pa
     for (auto& th : threads) 
       th.join();
 
+    // Is the number of partitions before the merging operations odd, and is pass_last_partitions' size 2?
     if (p_before_merge%2 && pass_last_partitions.size() == 2) {
+      // Clear pass_last_partitions
       pass_last_partitions.clear();
+      // Print out the result of the merging operation
       dump_partition(last_partitions_merge_output);
+      // Append the resulting partition to pass_last_partitions
       pass_last_partitions.push_back(last_partitions_merge_output);
     }
 
@@ -244,14 +263,17 @@ void merge_partitions_multithreaded(std::vector< std::vector<int> >& rand_int_pa
       output_partitions.push_back(pass_last_partitions[0]);
     print_partitions(output_partitions);
 
+    // Update variables for the next pass
     input_partitions = output_partitions;
     p_before_merge = p_after_merge;
     p_after_merge /= 2;
   }
 
+  // Is there one partition left in pass_last_partitions (occurs when p_before_merge is odd at any pass)?
   if (pass_last_partitions.size()) {
     std::cout << "\n-----------------------------   PASS " << ++counter << "   -----------------------------" << std::endl;
 
+    // Do the multithreaded merging operation of two remaining partitions (input_partitions[0] and output_partitions[0])
     threads.clear();
     output_partitions.resize(1);
     threads.push_back(std::thread(cpp_merge, std::ref(input_partitions[0]), std::ref(pass_last_partitions[0]), std::ref(output_partitions[0])));
