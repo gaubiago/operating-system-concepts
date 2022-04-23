@@ -5,6 +5,7 @@
 firefoxLauncher
 computeHashValue
 multi_threaded_merge_sort
+c_multi_threaded_merge_sort
 
 # Ignore
 *.txt
