@@ -69,6 +69,14 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
+	// No need for partitioning or merging
+	if (p == 1) {
+		std::sort(rand_int_list.begin(), rand_int_list.end());
+		std::cout << "\nNo need for partitioning or merging. Result of sorting:\n\n  ";
+		std::cout << dump_partition(rand_int_list) << std::endl;
+		return 0;
+	}
+
 	// Break down list into partitions (within original random int list)
 	set_partition_delimiters(n, p);
 	std::cout << "\nList breakdown into partitions:\n";
@@ -111,7 +119,7 @@ void print_usage() {
 						<< std::endl
 						<< "    <N> is an positive integer representing the size of your list of elements" << std::endl
 						<< "    <MAX_VALUE> is an positive integer representing the possible max. value of the list elements " << std::endl
-						<< "    <P> is an positive integer representing the intended number of partitions to break down the list into" << std::endl
+						<< "    <P> is an positive integer (greater than zero) representing the intended number of partitions to break down the list into" << std::endl
 						<< std::endl
 						<< "Example:" << std::endl
 						<< "    $ ./multi_threaded_merge_sort 25 100 5" << std::endl
@@ -149,8 +157,9 @@ void validate_argv(int &argc, char *argv[]) {
 
 	// p: Number of partitions to be created
 	const std::string p_str(argv[3]);
+	bool terminate = !std::stoi(p_str) ? true : false;
 	for (int i = 0; i < p_str.size(); i++) {
-		if (!isdigit(p_str[i])) {
+		if (!isdigit(p_str[i]) || terminate) {
 			std::cout << "Invalid number of intended partitions." << std::endl;
 			print_usage();
 			exit(USAGE_ERROR);
