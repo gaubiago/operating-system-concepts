@@ -42,20 +42,19 @@ std::vector<int> last_partitions_merge_output;
 
 void print_usage();
 void validate_argv(int &argc, char *argv[]);
-std::string dump_partition(std::vector<int> &partition); // overloaded
+std::string dump_partition(std::vector<int> &partition); // Overloaded
 void generate_list(const size_t &n, const size_t &upper_bound);
-void print_list(std::vector<int> &list);
+void print_list();
 void set_partition_delimiters(const size_t &n, const size_t &p);
-std::string dump_partition(std::vector<int> &partition, std::pair<size_t, size_t> &pair); // overloaded
-void print_partitions(); // overloaded
-void display_sort_msg(std::pair<size_t, size_t> idx_pair, size_t part_id);
+std::string dump_partition(std::pair<size_t, size_t> &pair); // Overloaded 
+void print_partitions(); // Overloaded 
+void display_sort_msg(std::pair<size_t, size_t>& idx_pair, size_t& part_id);
 void* cpp_sort(void *args_ptr);
 void sort_partitions_multithreaded(std::vector<pthread_t>& threads, const size_t& p);
-void print_partitions(std::vector< std::vector<int> >& partitions); // overloaded
-void display_merge_msg(std::vector<int>& in_part_a, std::vector<int>& in_part_b, std::vector<int>& out_part, size_t part_id);
+void print_partitions(std::vector< std::vector<int> >& partitions); // Overloaded
+void display_merge_msg(std::vector<int>& in_part_a, std::vector<int>& in_part_b, std::vector<int>& out_part, size_t& part_id);
 void* cpp_merge(void* args_ptr);
-void merge_partitions_multithreaded(std::vector<pthread_t>& threads, 
-																		const size_t& p);
+void merge_partitions_multithreaded(std::vector<pthread_t>& threads, const size_t& p);
 
 int main(int argc, char *argv[]) {
 	// Validate arguments that are passed in upon running executable
@@ -70,7 +69,8 @@ int main(int argc, char *argv[]) {
 
 	// Generate list of random integers
 	generate_list(n, upper_bound);
-	print_list(rand_int_list);
+	std::cout << "Generated list of random integers:\n\n  ";
+	print_list();
 
 	// No need for partitioning, sorting, and merging if list has only 1 element
 	if (rand_int_list.size() == 1) {
@@ -173,6 +173,7 @@ void validate_argv(int &argc, char *argv[]) {
 	}
 }
 
+// Overloaded
 std::string dump_partition(std::vector<int> &partition) {
 	// Build partition string
 	std::string str("");
@@ -196,10 +197,8 @@ void generate_list(const size_t &n, const size_t &upper_bound) {
 	}
 }
 
-void print_list(std::vector<int> &list) {
-	std::cout << "Generated list of random integers:"
-						<< "\n\n  "
-						<< dump_partition(list) << std::endl
+void print_list() {
+	std::cout << dump_partition(rand_int_list) << std::endl
 						<< std::flush;
 }
 
@@ -216,12 +215,13 @@ void set_partition_delimiters(const size_t &n, const size_t &p) {
 	}
 }
 
-std::string dump_partition(std::vector<int> &partition, std::pair<size_t, size_t> &pair) {
+// Overloaded
+std::string dump_partition(std::pair<size_t, size_t> &pair) {
 	// Build partition string
 	std::string str("");
 	str += '[';
 	for (size_t i = pair.first; i < pair.second; i++) {
-		str += std::to_string(partition[i]);
+		str += std::to_string(rand_int_list[i]);
 		if (i != pair.second - 1)
 			str += ' ';
 	}
@@ -229,17 +229,18 @@ std::string dump_partition(std::vector<int> &partition, std::pair<size_t, size_t
 	return str;
 }
 
+// Overloaded
 void print_partitions() {
 	std::cout << std::endl;
 	for (int i = 0; i < pairs.size(); i++)
-		std::cout << "  Part. " << i << ": " << dump_partition(rand_int_list, pairs[i])
+		std::cout << "  Part. " << i << ": " << dump_partition(pairs[i])
 							<< " (size=" << pairs[i].second - pairs[i].first << ")"
 							<< std::endl
 							<< std::flush;
 }
 
-void display_sort_msg(std::pair<size_t, size_t> idx_pair, size_t part_id) {
-  std::string str("  Part. " + std::to_string(part_id) + ": " + dump_partition(rand_int_list, idx_pair) 
+void display_sort_msg(std::pair<size_t, size_t>& idx_pair, size_t& part_id) {
+  std::string str("  Part. " + std::to_string(part_id) + ": " + dump_partition(idx_pair) 
 														 + " (size=" + std::to_string(idx_pair.second - idx_pair.first ) + ")\n");
   std::cout << str;
 }
@@ -271,6 +272,7 @@ void sort_partitions_multithreaded(std::vector<pthread_t>& threads, const size_t
 		pthread_join(threads[i], NULL);
 }
 
+// Overloaded
 void print_partitions(std::vector< std::vector<int> >& partitions) {
   std::cout << std::endl;
   for (int i = 0; i < partitions.size(); i++) {
@@ -279,7 +281,7 @@ void print_partitions(std::vector< std::vector<int> >& partitions) {
   }
 }
 
-void display_merge_msg(std::vector<int>& in_part_a, std::vector<int>& in_part_b, std::vector<int>& out_part, size_t part_id) {
+void display_merge_msg(std::vector<int>& in_part_a, std::vector<int>& in_part_b, std::vector<int>& out_part, size_t& part_id) {
   std::string str("\n * Merged \n    Part. " + std::to_string(2*part_id) + ":\t " + dump_partition(in_part_a) + " (size=" + std::to_string(in_part_a.size()) + ")" + " and " 
                             + "\n    Part. " + std::to_string(2*part_id + 1) + ":\t " + dump_partition(in_part_b) + " (size=" + std::to_string(in_part_b.size()) + ")" 
                 + "\n - Result: \n    New Part. " + std::to_string(part_id) + ": " + dump_partition(out_part) + " (size=" + std::to_string(out_part.size()) + ")\n");
@@ -299,8 +301,7 @@ void* cpp_merge(void* args_ptr) {
   pthread_exit(0);
 }
 
-void merge_partitions_multithreaded(std::vector<pthread_t>& threads, 
-																		const size_t& p) {
+void merge_partitions_multithreaded(std::vector<pthread_t>& threads, const size_t& p) {
   // p_before_merge: number of partitions before merging operations
   size_t p_before_merge = p;
   // p_after_merge: number of partitions after merging operations
