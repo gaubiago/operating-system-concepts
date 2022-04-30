@@ -27,7 +27,7 @@ typedef struct {
 std::vector<int> rand_int_list;
 
 // pairs: tuple to hold both starting and ending indices of each partition
-std::vector<std::pair<size_t, size_t>> pairs;
+std::vector< std::pair<size_t, size_t> > pairs;
 
 // Temporary vectors for merging operations 
 // input_partitions: partitions before merging operations
