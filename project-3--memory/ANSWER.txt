@@ -1,0 +1,19 @@
+a) Are the files in your program sharing the same memory region?
+
+I ran numerous tests, with various sizes of input files, trying to 
+understand whether the files were sharing the same memory. For every
+different size of input file, I ran the code with the memcpy() part and 
+without the memcpy() part. With memcpy(), I was able to find
+the content inside the output file, and withouth memcpy() noticed that 
+the file had null bytes all over although it had the same size as the input 
+file. That way, I found out that for every test I ran, the files were not 
+sharing the same memory region.
+
+b) Should they? Justify your answer.
+
+No, the two files should not share the same memory. Let's take an example in 
+which we have an input and an output file, and instead of copying the data
+straight from one file to another, we want to transform the data read before
+writing it to the output file. In that case, if both files had the same memory
+region, the new data to be written to the output file would corrupt the
+content of the input file. 

@@ -6,10 +6,14 @@ firefoxLauncher
 computeHashValue
 multi_threaded_merge_sort
 c_multi_threaded_merge_sort
+mmap
+file_sys_example
 
 # Ignore
 *.txt
 *.zip
+!ANSWER.txt
+!README.txt
 
 # VS Code hidden file
 .vscode
