@@ -4,7 +4,7 @@ I ran numerous tests, with various sizes of input files, trying to
 understand whether the files were sharing the same memory. For every
 different size of input file, I ran the code with the memcpy() part and 
 without the memcpy() part. With memcpy(), I was able to find
-the content inside the output file, and withouth memcpy() noticed that 
+the content inside the output file, and without memcpy() noticed that 
 the file had null bytes all over although it had the same size as the input 
 file. That way, I found out that for every test I ran, the files were not 
 sharing the same memory region.
