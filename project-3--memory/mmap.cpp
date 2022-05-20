@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 {
 	int src_fd, dest_fd, pagesize;
 	size_t count;
-	char* src_ptr, * dest_ptr;
+	char* src_ptr, * backup_src_ptr, * dest_ptr, * backup_dest_ptr;
 	struct stat stats;
 
 	// Ensure the command line is correct
@@ -62,9 +62,6 @@ int main(int argc, char** argv)
 							<<"Unable to get file properties"
 							<< std::endl;
 
-	// Fetch the page size
-	pagesize = getpagesize();
-
 	// Map the input file into memory
 	src_ptr = (char*) mmap(NULL, stats.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, src_fd, 0);
 	if (*src_ptr < 0) {
@@ -73,6 +70,9 @@ int main(int argc, char** argv)
 							<< std::endl;
 		exit(1);
 	}
+
+	// Save the src_ptr starting address for munmap later
+	backup_src_ptr = src_ptr;
 
 	// Resize output file to input file's size
 	ftruncate(dest_fd, stats.st_size);
@@ -85,6 +85,12 @@ int main(int argc, char** argv)
 							<< std::endl;
 		exit(1);
 	}
+
+	// Save the dest_ptr starting address for munmap later
+	backup_dest_ptr = dest_ptr;
+
+	// Fetch the page size
+	pagesize = getpagesize();
 
 	std::cout << std::endl
 						<< "File copy being made in chunks of " << 100*pagesize << " bytes..."
@@ -102,18 +108,18 @@ int main(int argc, char** argv)
 	}
 
 	// Copy remaining bytes if any
-	size_t remainder_bytes = (stats.st_size % COPY_SIZE);
-	if (remainder_bytes > 0)
-		memcpy(dest_ptr, src_ptr, remainder_bytes); 
+	const size_t REMAINDER_BYTES = (stats.st_size % COPY_SIZE);
+	if (REMAINDER_BYTES > 0)
+		memcpy(dest_ptr, src_ptr, REMAINDER_BYTES); 
 
 	// Unmap the shared memory regions
-	if (munmap(src_ptr, pagesize) < 0) {
+	if (munmap(backup_src_ptr, stats.st_size) < 0) {
 		std::cout << std::endl 
 							<< "Input-file memory unmapping did not succeed"
 							<< std::endl;
 		exit(1);
 	}
-	if (munmap(dest_ptr, pagesize) < 0) {
+	if (munmap(backup_dest_ptr, stats.st_size) < 0) {
 		std::cout << std::endl 
 							<< "Output-file memory unmapping did not succeed"
 							<< std::endl;

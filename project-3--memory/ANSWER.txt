@@ -11,9 +11,9 @@ sharing the same memory region.
 
 b) Should they? Justify your answer.
 
-No, the two files should not share the same memory. Let's take an example in 
-which we have an input and an output file, and instead of copying the data
-straight from one file to another, we want to transform the data read before
-writing it to the output file. In that case, if both files had the same memory
-region, the new data to be written to the output file would corrupt the
-content of the input file. 
+No, the two files should not share the same memory. Let's take as an example  
+the scenario in which we have an input and an output file, and instead of copying 
+the data straight from one file to another using one process, we want to transform 
+the data read before writing it to the output file using the same process. In that 
+case, if both files had the same memory region, the new data to be written to the 
+output file would corrupt the content of the input file. 
